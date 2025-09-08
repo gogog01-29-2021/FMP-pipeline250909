@@ -1,0 +1,17 @@
+# ETF Data Pipeline - Core Requirements
+# Python 3.8+ required
+
+# === ESSENTIAL (Required for basic functionality) ===
+pandas>=2.0.0           # Data manipulation
+numpy>=1.24.0           # Numerical operations
+requests>=2.31.0        # API calls
+python-dotenv>=1.0.0    # Environment variables
+pyarrow>=12.0.0         # Parquet file support
+psycopg2-binary>=2.9.0  # QuestDB connection
+urllib3>=1.26.0         # HTTP client
+
+# === OPTIONAL (Not required for core pipeline) ===
+# yfinance>=0.2.0       # Alternative data source (not used)
+# matplotlib>=3.7.0     # Visualization (not used)
+# seaborn>=0.12.0       # Statistical plots (not used)
+# questdb>=1.0.0        # QuestDB Python client (using psycopg2 instead)

@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# Environment files
+.env
+*.env
+
+# Data files (too large for git)
+data/
+*.csv
+*.parquet
+*.xlsx
+
+# QuestDB
+questdb*/
+questdb.tar.gz
+*.questdb
+
+# Logs
+logs/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+nul
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
+*_backup.*
+
+# Reports
+*.json
+network_diagnostics_report.json
