@@ -15,7 +15,7 @@ if "%ERRORLEVEL%"=="1" (
 
 REM Run Python update script
 echo Running nightly ETF update...
-python nightly_etf_update.py
+python src\nightly_etf_update.py
 
 REM Log completion
 echo Update completed at %date% %time% >> logs\scheduler.log

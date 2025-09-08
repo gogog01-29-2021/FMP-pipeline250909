@@ -1,5 +1,8 @@
-from etf_downloader import ETFDownloader
-from questdb_client import QuestDBClient
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
+
+from premium_unified_processor import PremiumDataProcessor
 import os
 from datetime import datetime
 

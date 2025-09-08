@@ -3,7 +3,7 @@
 
 $taskName = "ETF_Nightly_Update"
 $description = "Automated ETF and Stock data update at 2:00 AM daily"
-$scriptPath = "C:\etf_data_project\run_nightly_update.bat"
+$scriptPath = "C:\etf_data_project\scripts\run_nightly_update.bat"
 
 # Check if task already exists
 $existingTask = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
