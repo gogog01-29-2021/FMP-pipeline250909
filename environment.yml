@@ -1,0 +1,16 @@
+name: etf_pipeline_working2509
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - pandas>=2.0.0
+  - numpy>=1.24.0
+  - requests>=2.31.0
+  - python-dotenv>=1.0.0
+  - psycopg2>=2.9.6
+  - pip
+  - pip:
+    - pyarrow>=12.0.0
+    - schedule>=1.2.0
+    - financialmodelingprep

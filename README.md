@@ -2,6 +2,24 @@
 
 A comprehensive financial data pipeline that fetches, processes, and stores ETF and S&P 500 stock data using the Financial Modeling Prep (FMP) API, with storage in multiple formats including CSV, Parquet, and QuestDB time-series database.
 
+## 🚀 Quick Reference
+
+```bash
+# Project Location
+C:\etf_data_project
+
+# Activate Conda Environment (ALWAYS DO THIS FIRST!)
+conda activate etf_pipeline_working2509
+
+# Run Data Update
+python premium_unified_processor.py
+
+# Check Scheduled Task
+schtasks /query /tn "ETF_Nightly_Update"
+```
+
+⚠️ **IMPORTANT**: Windows Task Scheduler only runs when computer is ON. See [Automated Scheduling](#automated-scheduling) section for solutions.
+
 ## Features
 
 - **Multi-format Data Storage**: CSV, Parquet, and QuestDB
@@ -29,38 +47,111 @@ A comprehensive financial data pipeline that fetches, processes, and stores ETF 
 ## Quick Start
 
 ### Prerequisites
-- Python 3.8+
+- Python 3.8+ (Anaconda recommended)
 - Windows 10/11 (for Task Scheduler)
 - FMP API Key (Premium plan for 1-minute data)
+- ~2GB disk space for data storage
 
-### Installation
+### Complete Setup for New Computer
 
-1. Clone the repository:
+#### Step 1: Install Anaconda
+1. Download Anaconda from: https://www.anaconda.com/products/individual
+2. Install with default settings
+3. Open Anaconda Prompt (not regular command prompt)
+
+#### Step 2: Create Conda Environment (etf_pipeline_working2509)
 ```bash
+# Create new conda environment with Python 3.9
+conda create -n etf_pipeline_working2509 python=3.9 -y
+
+# Activate the environment
+conda activate etf_pipeline_working2509
+
+# Verify environment is active (should show etf_pipeline_working2509)
+conda info --envs
+```
+
+#### Step 3: Clone/Copy Project
+```bash
+# Option A: Clone from git (if available)
 git clone https://github.com/yourusername/etf_data_project.git
 cd etf_data_project
+
+# Option B: Copy existing folder
+# Copy your etf_data_project folder to C:\etf_data_project
 ```
 
-2. Install dependencies:
+#### Step 4: Install Dependencies
 ```bash
-pip install -r requirements.txt
+# Make sure you're in the project directory
+cd C:\etf_data_project
+
+# Activate conda environment if not already active
+conda activate etf_pipeline_working2509
+
+# Install packages using conda where possible (more stable)
+conda install pandas numpy requests python-dotenv psycopg2 -y
+
+# Install remaining packages with pip
+pip install pyarrow schedule financialmodelingprep
+
+# Verify installations
+python -c "import pandas, numpy, requests, dotenv, psycopg2, pyarrow, schedule; print('All packages installed successfully!')"
 ```
 
-3. Configure API key:
+#### Step 5: Configure API Key
 ```bash
+# Create .env file from example
 copy .env.example .env
-# Edit .env and add your FMP_API_KEY
+
+# Edit .env file and add your FMP API key
+notepad .env
+# Add: FMP_API_KEY=your_actual_api_key_here
 ```
 
-4. Install QuestDB:
+#### Step 6: Install and Configure QuestDB
 ```bash
-powershell -ExecutionPolicy Bypass -File install_questdb.ps1
+# Install QuestDB (one-time setup)
+powershell -ExecutionPolicy Bypass -File scripts\install_questdb.ps1
+
+# Start QuestDB
+scripts\start_questdb.bat
+
+# Verify QuestDB is running
+# Open browser: http://localhost:9000
+```
+
+#### Step 7: Initial Data Load
+```bash
+# Test the setup with a single update
+python premium_unified_processor.py
+
+# Verify data was loaded
+python check_questdb_data.py
+```
+
+#### Step 8: Setup Automated Scheduling (Optional)
+```bash
+# Create Windows Task Scheduler task
+powershell -ExecutionPolicy Bypass -File scripts\setup_auto_schedule.ps1
 ```
 
 ## Usage
 
+### Important: Always Activate Conda Environment First
+```bash
+# EVERY TIME you open a new terminal/Anaconda Prompt:
+conda activate etf_pipeline_working2509
+
+# Navigate to project directory
+cd C:\etf_data_project
+```
+
 ### Manual Data Update
 ```bash
+# Make sure conda environment is activated first!
+conda activate etf_pipeline_working2509
+
 # Fetch all ETF and stock data
 python premium_unified_processor.py
 
@@ -69,14 +160,121 @@ python check_questdb_data.py
 ```
 
 ### Automated Scheduling
+
+⚠️ **IMPORTANT: Computer Must Be On** ⚠️
+Windows Task Scheduler only runs when your computer is powered on. If your computer is off at 2:00 AM, the task will NOT run. Options:
+1. **Keep computer on** - Leave your computer running overnight
+2. **Wake on schedule** - Configure Windows to wake from sleep (see below)
+3. **Run on startup** - Configure task to run when computer starts if missed
+4. **Use cloud server** - Deploy to a cloud VPS for 24/7 operation
+
+#### Setting Up Automated Daily Updates
+
 The system includes Windows Task Scheduler integration for automatic daily updates at 2:00 AM:
 
+##### Method 1: PowerShell Script (Recommended)
 ```bash
-# Create scheduled task
-powershell -ExecutionPolicy Bypass -File create_schedule.ps1
+# Run the setup script to create the scheduled task
+powershell -ExecutionPolicy Bypass -File scripts\setup_auto_schedule.ps1
+```
 
-# Or manually with batch file
+This script will:
+- Create a Windows Task called "ETF_Nightly_Update"
+- Schedule it to run daily at 2:00 AM
+- Configure it to run with highest privileges
+- Set up automatic retry on failure
+- Log output to `logs\scheduled_update.log`
+
+##### Method 2: Manual Task Scheduler Setup
+1. Open Task Scheduler (`taskschd.msc`)
+2. Click "Create Basic Task"
+3. Name: "ETF_Nightly_Update"
+4. Trigger: Daily at 2:00 AM
+5. Action: Start a program
+6. Program: `C:\etf_data_project\run_network_resilient.bat`
+7. Start in: `C:\etf_data_project`
+
+##### Method 3: Batch File (Legacy)
+```bash
+# Alternative method using batch file
 schedule_nightly_update.bat
+```
+
+#### Managing the Scheduled Task
+
+```bash
+# Check if task is running
+schtasks /query /tn "ETF_Nightly_Update"
+
+# Run the task immediately (for testing)
+schtasks /run /tn "ETF_Nightly_Update"
+
+# Disable the task temporarily
+schtasks /change /tn "ETF_Nightly_Update" /disable
+
+# Enable the task
+schtasks /change /tn "ETF_Nightly_Update" /enable
+
+# Delete the task
+schtasks /delete /tn "ETF_Nightly_Update" /f
+```
+
+#### Verifying Task Execution
+
+1. **Check Task History**:
+   - Open Task Scheduler
+   - Find "ETF_Nightly_Update" in the Task Scheduler Library
+   - Check the "History" tab for execution details
+
+2. **Check Log Files**:
+   ```bash
+   # View the latest log
+   type logs\scheduled_update.log
+   
+   # Check for today's data updates
+   dir data\daily\csv\*.csv | findstr /i today
+   ```
+
+3. **Verify in QuestDB**:
+   ```sql
+   -- Check latest data timestamps
+   SELECT symbol, MAX(date) as last_update 
+   FROM ohlcv1d 
+   GROUP BY symbol 
+   ORDER BY last_update DESC;
+   ```
+
+#### Customizing the Schedule
+
+To change the schedule time or frequency, edit `scripts\setup_auto_schedule.ps1` and modify:
+- `$trigger.At` for the time (default: "2:00AM")
+- `$trigger.Daily` for frequency (can change to Weekly, Monthly, etc.)
+
+Then re-run the setup script to apply changes.
+
+#### Configuring Task to Run When Computer is Off
+
+##### Option 1: Run Missed Task at Startup
+```bash
+# Configure task to run at startup if missed
+schtasks /change /tn "ETF_Nightly_Update" /RI 1
+```
+
+##### Option 2: Wake Computer from Sleep
+1. Open Task Scheduler
+2. Find "ETF_Nightly_Update"
+3. Right-click → Properties
+4. Go to "Conditions" tab
+5. Check "Wake the computer to run this task"
+6. Ensure "Start only if computer is on AC power" is unchecked for laptops
+
+##### Option 3: Configure Power Settings
+```bash
+# Allow wake timers in Windows
+powercfg /waketimers enable
+
+# Check current power plan
+powercfg /query SCHEME_CURRENT SUB_SLEEP STANDBYIDLE
 ```
 
 ### SQL Query Examples
@@ -187,7 +385,10 @@ schedule>=1.2.0
 1. **QuestDB Connection Error**:
 ```bash
 # Start QuestDB
-start_questdb.bat
+scripts\start_questdb.bat
+
+# Check if QuestDB is running
+netstat -an | findstr :8812
 ```
 
 2. **API Rate Limits**:
@@ -198,6 +399,38 @@ start_questdb.bat
 ```bash
 # Check Task Scheduler status
 schtasks /query /tn "ETF_Nightly_Update"
+
+# Check last run time
+schtasks /query /tn "ETF_Nightly_Update" /v | findstr "Last Run"
+```
+
+4. **Conda Environment Issues**:
+```bash
+# List all environments
+conda env list
+
+# If environment missing, recreate from yml file
+conda env create -f environment.yml
+
+# Activate environment
+conda activate etf_pipeline_working2509
+```
+
+5. **Module Import Errors**:
+```bash
+# Reinstall all dependencies
+conda activate etf_pipeline_working2509
+pip install -r requirements.txt --force-reinstall
+```
+
+6. **Task Scheduler Not Running (Computer Was Off)**:
+```bash
+# Run the task manually to catch up
+schtasks /run /tn "ETF_Nightly_Update"
+
+# Or run the script directly
+conda activate etf_pipeline_working2509
+python premium_unified_processor.py
 ```
 
 ## Contributing
