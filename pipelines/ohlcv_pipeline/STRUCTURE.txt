@@ -1,0 +1,149 @@
+OHLCV Pipeline - Complete Structure
+====================================
+
+pipelines/ohlcv_pipeline/
+│
+├── README.md                          # Complete documentation
+│
+├── run_unified_pipeline.py            # 🎯 MAIN ORCHESTRATOR
+│                                      # Run this to execute full pipeline
+│
+├── src/                               # Core modules
+│   ├── create_unified_schema.py       # Creates QuestDB tables
+│   ├── unified_data_crawler.py        # Downloads data from APIs
+│   ├── load_to_questdb.py             # Loads CSV/Parquet → QuestDB
+│   ├── questdb_manager.py             # QuestDB utility functions
+│   ├── questdb_client.py              # QuestDB connection wrapper
+│   ├── fmp_final_processor.py         # FMP data processor
+│   ├── premium_unified_processor.py   # Premium data handler
+│   └── nightly_etf_update.py          # Automated nightly updates
+│
+├── analytics/                         # Analytics scripts
+│   ├── load_and_analyze.py            # 📊 Load + SQL analytics
+│   ├── analytics_comprehensive.py     # 📊 Python analytics (CSV)
+│   ├── create_analytics_tables.py     # Create result tables
+│   └── populate_analytics_tables.py   # Populate result tables
+│
+├── scripts/                           # Utility scripts
+│   └── test_pipeline_simple.py        # Simple test runner
+│
+└── docs/                              # Documentation
+    ├── QUICK_START_GUIDE.md           # Quick start
+    └── UNIFIED_PIPELINE_README.md     # Detailed docs
+
+
+KEY FILES CREATED TODAY (2025-10-12):
+======================================
+
+1. DATA CRAWLING:
+   - src/unified_data_crawler.py          (Downloads OHLCV from FMP/Binance)
+   - src/create_unified_schema.py         (Creates QuestDB schema)
+   - src/load_to_questdb.py               (Loads data into DB)
+
+2. PIPELINE ORCHESTRATOR:
+   - run_unified_pipeline.py              (Main entry point)
+   - scripts/test_pipeline_simple.py      (Test script)
+
+3. ANALYTICS:
+   - analytics/load_and_analyze.py        (SQL-based analytics)
+   - analytics/analytics_comprehensive.py (Python analytics)
+   - analytics/create_analytics_tables.py (Create result tables)
+   - analytics/populate_analytics_tables.py (Fill result tables)
+
+4. DOCUMENTATION:
+   - README.md                            (Main documentation)
+   - docs/QUICK_START_GUIDE.md            (Quick start)
+   - docs/UNIFIED_PIPELINE_README.md      (Detailed guide)
+   - STRUCTURE.txt                        (This file)
+
+
+WORKFLOW:
+=========
+
+1. START HERE:
+   python run_unified_pipeline.py --mode test --years 1 --limit 3
+
+2. THEN RUN ANALYTICS:
+   python analytics/create_analytics_tables.py
+   python analytics/populate_analytics_tables.py
+
+3. QUERY RESULTS:
+   Open http://localhost:9000
+   SELECT * FROM beta_results;
+
+
+DATABASE TABLES:
+================
+
+Data Tables:
+- ohlcv_unified            # All OHLCV data (1min, 1hour, 1day)
+
+Analytics Tables:
+- beta_results             # Beta calculations vs SPY
+- correlation_matrix       # Pairwise correlations
+- volatility_metrics       # Volatility & Sharpe ratios
+- significant_events       # Major price movements
+
+
+DATA FLOW:
+==========
+
+1. DOWNLOAD:
+   FMP API / Binance API
+         ↓
+   CSV files (data/csv/)
+         ↓
+   Parquet files (data/parquet/)
+
+2. LOAD:
+   CSV/Parquet files
+         ↓
+   QuestDB: ohlcv_unified table
+
+3. ANALYZE:
+   ohlcv_unified table
+         ↓
+   SQL calculations
+         ↓
+   Analytics result tables
+
+4. QUERY:
+   Analytics tables
+         ↓
+   Web Console / Python / SQL
+
+
+EXAMPLE COMMANDS:
+=================
+
+# Quick test (3 symbols, 1 year)
+python run_unified_pipeline.py --mode test --years 1 --limit 3
+
+# Production (priority-1, 5 years)
+python run_unified_pipeline.py --priority 1 --years 5
+
+# Full dataset (all symbols, 20 years)
+python run_unified_pipeline.py --mode full --years 20
+
+# Create analytics tables
+python analytics/create_analytics_tables.py
+python analytics/populate_analytics_tables.py
+
+# Python-based analytics (no DB needed)
+python analytics/analytics_comprehensive.py
+
+
+QUERY EXAMPLES:
+===============
+
+-- Get 1min data
+SELECT * FROM ohlcv_unified WHERE timeframe = '1min' LIMIT 100;
+
+-- Get beta results
+SELECT * FROM beta_results ORDER BY beta DESC;
+
+-- High correlation pairs
+SELECT * FROM correlation_matrix WHERE correlation > 0.8;
+
+-- Recent significant events
+SELECT * FROM significant_events ORDER BY return_pct DESC LIMIT 10;
